@@ -84,6 +84,8 @@ MainGameState.prototype = {
 			};
 			this.visitor = this.add.sprite(this.startVisitorPos.x, this.startVisitorPos.y, "visitor");
 			this.visitor.scared = 0;
+			this.visitor.pastScary = [];
+			this.visitor.anticipation = 0;
 
 			game.time.events.loop(250, this.moveVisitor, this);
       //state vars
@@ -119,14 +121,32 @@ MainGameState.prototype = {
 		this.visitorStep = 0;
 		this.visitor.position.x = this.startVisitorPos.x;
 		this.visitor.position.y = this.startVisitorPos.y;
+		this.visitor.pastScary = [];
 	},
 
 	evaluateVisitorScareFactor : function(){
+
+		this.visitor.pastScary.push(this.visitor.scared);
+
 		var vx = this.visitor.position.x;
 		var vy = this.visitor.position.y;
 
+		//scary factors
+
+		//anticipation
+		if(this.isLineOfSightClear())
+			this.visitor.anticipation++;
+		else
+			this.visitor.anticipation = 0;
+
+		// the closer to an actor, the more scared you get
 		var actorsDistFactor = 0;
 
+		//penaltys
+		//penalize for too much sustained scary
+		var tooMuchScaryPenalty = 1;
+
+		var distToNearestActor = 10000;
 		for(var rowI in this.board){
 			for(var colI in this.board[rowI]){
 				var sprite = this.board[rowI][colI].sprite;
@@ -137,12 +157,82 @@ MainGameState.prototype = {
 
 					// if its far away, its not scary
 					var distToThisActorFactor = Math.pow(2, -1*dist/50);
-					actorsDistFactor = 1 - actorsDistFactor*(1-distToThisActorFactor);
+					//console.log(sprite.key + " "  + distToThisActorFactor);
+					actorsDistFactor = 1 - (1 - actorsDistFactor)*(1-distToThisActorFactor);
+
+					if(distToNearestActor > dist)
+						distToNearestActor = dist;
 				}
 			}
 		}
-		var scareFactor = 1 - distNonScaryFactor;
-		console.log("SCARYNESS: " + scareFactor);
+
+
+		var recentPastScary = this.visitor.pastScary.slice(this.visitor.pastScary.length - 3);
+		for(var pastSVal in recentPastScary){
+			tooMuchScaryPenalty *= Math.pow(Math.abs(
+				1-recentPastScary[pastSVal]
+			), 1/10);
+		}
+
+		//jump scare factors
+		// high anticipation and high change in distance is jump scare
+		var dScare = Math.max(actorsDistFactor - this.visitor.scared, 0);
+		var jumpScareFactor = Math.pow(actorsDistFactor, 1/3)*dScare * this.visitor.anticipation/53.0;  // 53 steps to finish
+
+
+		this.visitor.scared = actorsDistFactor*tooMuchScaryPenalty;
+		this.visitor.scared += (1 - this.visitor.scared)*jumpScareFactor;
+
+		console.log("SCARYNESS: " + this.visitor.scared + " TMP: " + tooMuchScaryPenalty + " A: " + this.visitor.anticipation + " J: " + jumpScareFactor);
+
+	},
+
+	isLineOfSightClear : function (){
+		var nextStep = path[this.visitorStep];
+
+		//is line of sight clear
+		var ilosc = true;
+
+		var col = (this.visitor.position.x - 150)/50;
+		var row = this.visitor.position.y/50;
+		if(nextStep === U){
+			console.log("UP");
+			while(row >= 0 && this.board[row][col].sprite !== null){
+				if(this.board[row][col].sprite.key !== "floor"){
+					ilosc = false;
+				}
+				row--;
+			}
+		}
+		if(nextStep === D){
+			console.log("D");
+			while(row <= 11 && this.board[row][col].sprite !== null){
+				if(this.board[row][col].sprite.key !== "floor"){
+					ilosc = false;
+				}
+				row++;
+			}
+		}
+		if(nextStep === L){
+			console.log("L");
+			while(col >= 0 && this.board[row][col].sprite !== null){
+				if(this.board[row][col].sprite.key !== "floor"){
+					ilosc = false;
+				}
+				col--;
+			}
+		}
+		if(nextStep === R){
+			console.log("R");
+			while(col <= 11 && this.board[row][col].sprite !== null){
+				if(this.board[row][col].sprite.key !== "floor"){
+					ilosc = false;
+				}
+				col++;
+			}
+		}
+		console.log(ilosc);
+		return ilosc;
 	},
 
   onClickActor : function (button) {
