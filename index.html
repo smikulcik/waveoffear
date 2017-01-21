@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8" />
+    <title>Wave of Fear</title>
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap.min.css">
+	<script type="text/javascript" src="js/phaser.min.js"></script>
+    <style type="text/css">
+			body {
+				margin: 0;
+				background-color: #333;
+				color:#eee;
+				padding-bottom: 100px;
+			}
+			canvas {
+			}
+			.box{
+				width: 830px;
+				margin:0px auto;
+				padding:15px;
+				border: 2px solid #444;
+				background-color: #363636;
+				margin-top: 15px;
+			}
+			#titlebox {
+				text-align:center;
+			}
+	</style>
+</head>
+<body>
+<div class=box>
+	<h1 id=titlebox>Wave of Fear</h1>
+</div>
+<div class=box>
+	<div id='gameDiv'></div>
+	<div id=howtoplay>
+		<h1>How To Play</h1>
+		<ul>
+			<li>Build an awesome Haunted House</li>
+				<li>Scare people!!!</li>
+		</ul>
+	</div>
+</div>
+
+<script>
+	var game = new Phaser.Game(800, 600, Phaser.AUTO, "gameDiv");
+</script>
+
+<script src='js/MainGameState.js'></script>
+<script src='js/Actor.js'></script>
+<script src='js/Menu.js'></script>
+
+<script>
+	// now we start the game
+	game.state.add('Menu', Menu);
+	game.state.add('MainGameState', MainGameState);
+	game.state.start('Menu');
+</script>
+</body>
+</html>
