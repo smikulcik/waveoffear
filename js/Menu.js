@@ -9,7 +9,7 @@ Menu.prototype = {
 
 	create : function(){
 		this.menu = this.add.sprite(0,0,'menu');
-		this.button = game.add.button(550, 500, 'button', this.onClick, this, 2, 1, 0);
+		this.button = game.add.button(550, 500, 'button', this.onClick, this);
 	},
 
 	update : function(){
