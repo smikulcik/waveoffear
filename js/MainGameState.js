@@ -26,7 +26,6 @@ MainGameState.prototype = {
 	preload : function () {
 		this.load.image('map','assets/mapTest.png');
 
-    this.load.image('wall','assets/block.png');
 		this.load.image('floor','assets/floor.png');
 
 		this.load.image('ghost','assets/ghost.png');
@@ -42,6 +41,10 @@ MainGameState.prototype = {
 		this.load.image('run','assets/run.png');
 		this.load.image('selected','assets/selected.png');
 		this.load.image('visitor','assets/visitor.png');
+
+		this.load.spritesheet('grn_heartbeat','assets/grn_heartbeat_sheet.png', 300,50,60);
+		this.load.spritesheet('ylw_heartbeat','assets/ylw_heartbeat_sheet.png', 300,50,60);
+		this.load.spritesheet('red_heartbeat','assets/red_heartbeat_sheet.png', 300,50,60);
 
 		game.load.audio('scare', ['assets/audio/scare.wav']);
 
@@ -105,6 +108,18 @@ MainGameState.prototype = {
 
 	    this.scoreboard = game.add.text(150, 15, "HS: 0", style);
 
+			//heartbeat
+
+      this.heartbeat = this.add.sprite(500,550,"grn_heartbeat");
+
+			this.heartbeat.loadTexture("ylw_heartbeat");
+      this.heartbeat.animations.add("ylw_heartbeat");
+
+			this.heartbeat.loadTexture("grn_heartbeat");
+			this.heartbeat.animations.add("grn_heartbeat");
+
+			this.heartbeat.loadTexture("red_heartbeat");
+			this.heartbeat.animations.add("red_heartbeat");
 	    //text.anchor.set(0);
 
       //state vars
@@ -114,6 +129,7 @@ MainGameState.prototype = {
 			this.selected.visible = false;
 			this.score = 0;
 			this.highscore = 0;
+			this.isrunning = false;
 
 	},
 
@@ -121,6 +137,8 @@ MainGameState.prototype = {
 	},
 
 	onClickRun : function(){
+		if(this.isrunning === true)return;
+		this.isrunning = true;
 		this.visitor.visible = true;
 		this.score = 0;
 		this.runVisitor();
@@ -141,6 +159,8 @@ MainGameState.prototype = {
 
 		this.score += Math.floor(scared*10);
 
+		this.updateHeartbeat();
+
 		if(scared - pastScared > .3){
 	  	this.music.scare.play();
 			console.log("scare!!!");
@@ -158,6 +178,21 @@ MainGameState.prototype = {
 			}
 			this.updateScore();
 		}
+	},
+
+	updateHeartbeat : function(){
+		var curF = this.heartbeat.frame;
+		if(this.visitor.scared > .8){
+			this.heartbeat.loadTexture("red_heartbeat");
+			this.heartbeat.play("red_heartbeat", 30, true);
+		}else if(this.visitor.scared > .4){
+			this.heartbeat.loadTexture("ylw_heartbeat");
+			this.heartbeat.play("ylw_heartbeat", 30, true);
+		}else{
+			this.heartbeat.loadTexture("grn_heartbeat");
+			this.heartbeat.play("grn_heartbeat", 30, true);
+		}
+		this.heartbeat.animations.currentAnim.setFrame(curF, true);
 	},
 
 	moveVisitor : function(){
@@ -294,14 +329,17 @@ MainGameState.prototype = {
 	},
 
   onClickActor : function (button) {
+		if(this.isrunning === true)return;
 		this.currentActor = button.key;
   },
 
   onClickOrientation : function (button) {
+		if(this.isrunning === true)return;
 		this.currentOrientation = button.key;
   },
 
   onClickAdd : function (button) {
+		if(this.isrunning === true)return;
 		// don't add if nothing selected
 		if(this.selected.visible === false)
 			return;
@@ -318,6 +356,7 @@ MainGameState.prototype = {
   },
 
   onClickBoard : function (button) {
+		if(this.isrunning === true)return;
 		this.selected.visible = true;
 		this.selected.position = button.position;
   }
