@@ -29,9 +29,13 @@ MainGameState.prototype = {
 		this.load.image('floor','assets/floor.png');
 
 		// spritesheet(name, filename, width of frame, height of frame, number of frames);
-		this.load.spritesheet('ghost','assets/ghost.png', 50,50,1);
 		this.load.spritesheet('stabber','assets/stabber.png', 50,50,1);
 		this.load.spritesheet('runner','assets/runner.png', 50,50,2);
+
+		this.load.spritesheet('ghost_down','assets/ghost_down.png', 50,50,6);
+		this.load.spritesheet('ghost_up','assets/ghost_up.png', 50,50,4);
+		this.load.spritesheet('ghost_left','assets/ghost_left.png', 50,50,5);
+		this.load.spritesheet('ghost_right','assets/ghost_right.png', 50,50,5);
 
 		this.load.image('up','assets/up.png');
 		this.load.image('down','assets/down.png');
@@ -54,7 +58,7 @@ MainGameState.prototype = {
 			game.stage.backgroundColor = 0xFFFFFF;
 			this.map = this.add.sprite(0,0,'map');
 
-      this.addGhostBtn = this.add.button(0, 50,'ghost', this.onClickActor, this);
+      this.addGhostBtn = this.add.button(0, 50,'ghost_down', this.onClickActor, this);
       this.addStabberBtn = this.add.button(0, 150,'stabber', this.onClickActor, this);
       this.addRunnerBtn = this.add.button(0, 250,'runner', this.onClickActor, this);
 
@@ -129,7 +133,7 @@ MainGameState.prototype = {
 	    //text.anchor.set(0);
 
       //state vars
-      this.currentActor = "ghost";
+      this.currentActor = "ghost_down";
       this.currentOrientation = "up";
       this.selected = this.add.sprite(0,0, "selected");
 			this.selected.visible = false;
@@ -167,15 +171,21 @@ MainGameState.prototype = {
 
 		this.updateHeartbeat();
 
+		var gotscared = false;
 		if(scared - pastScared > .3){
 	  	this.music.scare.play();
 			console.log("scare!!!");
+			gotscared = true;
 		}else{
 			console.log("only : " + (scared-pastScared));
 		}
 		var that = this;
 		if(this.visitorStep < path.length){
-			setTimeout(function(){that.runVisitor()}, 250);
+			if(gotscared === true){
+				setTimeout(function(){that.runVisitor()}, 1500);
+			}else {
+				setTimeout(function(){that.runVisitor()}, 500);
+			}
 		}else{
 			this.resetVisitor();
 			if(this.score > this.highscore){
@@ -368,9 +378,15 @@ MainGameState.prototype = {
 			(this.selected.position.x - 150)/50
 		].sprite;
 
-		sprite.loadTexture(this.currentActor);
-		sprite.animations.add(this.currentActor);
-		sprite.play(this.currentActor, 4, true);
+		var texture_name = this.currentActor;
+		if(texture_name === "ghost_down"){
+			texture_name = "ghost_" + this.currentOrientation;
+		}
+		console.log(texture_name + " " + this.currentActor);
+
+		sprite.loadTexture(texture_name);
+		sprite.animations.add(texture_name);
+		sprite.play(texture_name, 4, true);
 
 		// hide the selected indicator after placing an item
 		this.selected.visible = false;
