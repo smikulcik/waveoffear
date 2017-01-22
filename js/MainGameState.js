@@ -24,7 +24,7 @@ var MainGameState = function(){};
 
 MainGameState.prototype = {
 	preload : function () {
-		this.load.image('map','assets/mapTest.png');
+		this.load.image('map','assets/MapTest.png');
 
 		this.load.image('floor','assets/floor.png');
 
@@ -46,7 +46,7 @@ MainGameState.prototype = {
 		this.load.spritesheet('ylw_heartbeat','assets/ylw_heartbeat_sheet.png', 300,50,60);
 		this.load.spritesheet('red_heartbeat','assets/red_heartbeat_sheet.png', 300,50,60);
 
-		game.load.audio('scare', ['assets/audio/scare.wav']);
+		game.load.audio('scare', ['assets/Audio/Scare.wav']);
 
 	},
 	create : function() {
@@ -106,7 +106,7 @@ MainGameState.prototype = {
 
 	    var style = { font: "25px Arial", fill: "#ff0044", align: "left" };
 
-	    this.scoreboard = game.add.text(150, 15, "HS: 0", style);
+	    this.scoreboard = game.add.text(160, 15, "HS: 0", style);
 
 			//heartbeat
 
