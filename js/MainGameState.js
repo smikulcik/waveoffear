@@ -28,9 +28,10 @@ MainGameState.prototype = {
 
 		this.load.image('floor','assets/floor.png');
 
-		this.load.image('ghost','assets/ghost.png');
-		this.load.image('stabber','assets/stabber.png');
-		this.load.image('runner','assets/runner.png');
+		// spritesheet(name, filename, width of frame, height of frame, number of frames);
+		this.load.spritesheet('ghost','assets/ghost.png', 50,50,1);
+		this.load.spritesheet('stabber','assets/stabber.png', 50,50,1);
+		this.load.spritesheet('runner','assets/runner.png', 50,50,2);
 
 		this.load.image('up','assets/up.png');
 		this.load.image('down','assets/down.png');
@@ -177,6 +178,7 @@ MainGameState.prototype = {
 				this.highscore = Math.floor(this.score);
 			}
 			this.updateScore();
+			this.isrunning = false;
 		}
 	},
 
@@ -345,11 +347,15 @@ MainGameState.prototype = {
 			return;
 
 		// update sprite at location of the selected box
-		this.board[
+		var sprite = this.board[
 			(this.selected.position.y)/50
 		][
 			(this.selected.position.x - 150)/50
-		].sprite.loadTexture(this.currentActor);
+		].sprite;
+
+		sprite.loadTexture(this.currentActor);
+		sprite.animations.add(this.currentActor);
+		sprite.play(this.currentActor, 4, true);
 
 		// hide the selected indicator after placing an item
 		this.selected.visible = false;
