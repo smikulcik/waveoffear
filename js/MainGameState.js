@@ -147,7 +147,13 @@ MainGameState.prototype = {
 	},
 
 	onClickRun : function(){
-		if(this.isrunning === true)return;
+		if(this.isrunning === true){
+			this.isrunning = false;
+			clearTimeout(this.runTimeout); //stop the animation
+			this.resetVisitor();
+			return;
+		}
+
 		this.isrunning = true;
 		this.visitor.visible = true;
 		this.score = 0;
@@ -155,7 +161,7 @@ MainGameState.prototype = {
 	},
 
 	updateScore : function(){
-  	this.scoreboard.setText("HS: " + this.highscore + "\n Score: " + this.score);
+  	this.scoreboard.setText("HS: " + this.highscore + "\nScore: " + this.score);
 	},
 
 	runVisitor : function(){
@@ -182,9 +188,9 @@ MainGameState.prototype = {
 		var that = this;
 		if(this.visitorStep < path.length){
 			if(gotscared === true){
-				setTimeout(function(){that.runVisitor()}, 1500);
+				this.runTimeout = setTimeout(function(){that.runVisitor()}, 1500);
 			}else {
-				setTimeout(function(){that.runVisitor()}, 500);
+				this.runTimeout = setTimeout(function(){that.runVisitor()}, 500);
 			}
 		}else{
 			this.resetVisitor();
@@ -242,6 +248,8 @@ MainGameState.prototype = {
 		this.visitor.pastScary = [];
 		this.visitor.scared = 0;
 		this.visitor.visible=false;
+		this.heartbeat.animations.currentAnim.setFrame(0, true);
+		this.heartbeat.animations.stop(null, true);
 	},
 
 	evaluateVisitorScareFactor : function(){
