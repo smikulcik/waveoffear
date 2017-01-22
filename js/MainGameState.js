@@ -38,9 +38,13 @@ MainGameState.prototype = {
 		this.load.image('left','assets/left.png');
 		this.load.image('right','assets/right.png');
 
-		this.load.image('add','assets/addActor.png');
+		this.load.image('add','assets/add.png');
+		this.load.image('run','assets/run.png');
 		this.load.image('selected','assets/selected.png');
 		this.load.image('visitor','assets/visitor.png');
+
+		game.load.audio('scare', ['assets/audio/scare.wav']);
+
 	},
 	create : function() {
 			game.stage.backgroundColor = 0xFFFFFF;
@@ -56,6 +60,8 @@ MainGameState.prototype = {
       this.orienDBtn = this.add.button(50, 450,'down', this.onClickOrientation, this);
 
       this.addActorBtn = this.add.button(0, 550,'add', this.onClickAdd, this);
+      this.runBtn = this.add.button(0, 550,'add', this.onClickAdd, this);
+      this.runBtn = this.add.button(0, 500,'run', this.onClickRun, this);
 
 			this.board = [];
       for(var i=0;i<12;i++){ // rows
@@ -77,7 +83,7 @@ MainGameState.prototype = {
 
 			//visitor
 
-			this.visitorStep = 0;
+			this.visitorStep = -1;
 			this.startVisitorPos = {
 				x: 150 + 50,
 			 	y: 50*5
@@ -86,17 +92,72 @@ MainGameState.prototype = {
 			this.visitor.scared = 0;
 			this.visitor.pastScary = [];
 			this.visitor.anticipation = 0;
+			this.visitor.visible = false;
 
-			game.time.events.loop(250, this.moveVisitor, this);
+			//sounds
+	    this.music = {
+				'scare': game.add.audio('scare'),
+			};
+
+			//high score
+
+	    var style = { font: "25px Arial", fill: "#ff0044", align: "left" };
+
+	    this.scoreboard = game.add.text(150, 15, "HS: 0", style);
+
+	    //text.anchor.set(0);
+
       //state vars
       this.currentActor = "ghost";
       this.currentOrientation = "up";
       this.selected = this.add.sprite(0,0, "selected");
 			this.selected.visible = false;
+			this.score = 0;
+			this.highscore = 0;
+
 	},
 
 	update : function () {
+	},
 
+	onClickRun : function(){
+		this.visitor.visible = true;
+		this.score = 0;
+		this.runVisitor();
+	},
+
+	updateScore : function(){
+  	this.scoreboard.setText("HS: " + this.highscore + "\n Score: " + this.score);
+	},
+
+	runVisitor : function(){
+
+		this.updateScore();
+		this.moveVisitor();
+
+		var pastScared = this.visitor.scared;
+		this.evaluateVisitorScareFactor();
+		var scared = this.visitor.scared;
+
+		this.score += Math.floor(scared*10);
+
+		if(scared - pastScared > .3){
+	  	this.music.scare.play();
+			console.log("scare!!!");
+		}else{
+			console.log("only : " + (scared-pastScared));
+		}
+		var that = this;
+		if(this.visitorStep < path.length){
+			setTimeout(function(){that.runVisitor()}, 250);
+		}else{
+			this.resetVisitor();
+			if(this.score > this.highscore){
+				console.log("HIGH SCORE!!!");
+				this.highscore = Math.floor(this.score);
+			}
+			this.updateScore();
+		}
 	},
 
 	moveVisitor : function(){
@@ -109,19 +170,16 @@ MainGameState.prototype = {
 			this.visitor.position.x -= 50;
 		if(nextStep === R)
 			this.visitor.position.x += 50;
-
-		this.evaluateVisitorScareFactor();
-
 		this.visitorStep++;
-		if(this.visitorStep >= path.length)
-			this.resetVisitor();
 	},
 
 	resetVisitor : function(){
-		this.visitorStep = 0;
+		this.visitorStep = -1;
 		this.visitor.position.x = this.startVisitorPos.x;
 		this.visitor.position.y = this.startVisitorPos.y;
 		this.visitor.pastScary = [];
+		this.visitor.scared = 0;
+		this.visitor.visible=false;
 	},
 
 	evaluateVisitorScareFactor : function(){

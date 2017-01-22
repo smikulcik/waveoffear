@@ -4,7 +4,7 @@ var Menu = function(){};
 Menu.prototype = {
 	preload : function(){
 		this.load.image('menu','assets/menu.png');
-			this.load.image('button','assets/block.png');
+			this.load.image('button','assets/start.png');
 	},
 
 	create : function(){
