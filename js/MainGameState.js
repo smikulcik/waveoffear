@@ -41,7 +41,7 @@ MainGameState.prototype = {
 		this.load.image('add','assets/add.png');
 		this.load.image('run','assets/run.png');
 		this.load.image('selected','assets/selected.png');
-		this.load.image('visitor','assets/visitor.png');
+		this.load.spritesheet('visitor','assets/visitor.png', 50, 50, 9);
 
 		this.load.spritesheet('grn_heartbeat','assets/grn_heartbeat_sheet.png', 300,50,60);
 		this.load.spritesheet('ylw_heartbeat','assets/ylw_heartbeat_sheet.png', 300,50,60);
@@ -89,10 +89,15 @@ MainGameState.prototype = {
 
 			this.visitorStep = -1;
 			this.startVisitorPos = {
-				x: 150 + 50,
+				x: 175 + 50,
 			 	y: 50*5
 			};
 			this.visitor = this.add.sprite(this.startVisitorPos.x, this.startVisitorPos.y, "visitor");
+			this.visitor.animations.add("walkback", [0,1,0,2]);
+			this.visitor.animations.add("walkfront", [3,4,3,5]);
+			this.visitor.animations.add("walkside", [6,7,6,8]);
+			this.visitor.anchor.setTo(.5, 0);
+
 			this.visitor.scared = 0;
 			this.visitor.pastScary = [];
 			this.visitor.anticipation = 0;
@@ -199,14 +204,24 @@ MainGameState.prototype = {
 
 	moveVisitor : function(){
 		var nextStep = path[this.visitorStep];
-		if(nextStep === U)
+		if(nextStep === U){
 			this.visitor.position.y -= 50;
-		if(nextStep === D)
+			this.visitor.play("walkback", 8, true);
+			this.visitor.scale.x = 1;
+		}
+		if(nextStep === D){
 			this.visitor.position.y += 50;
-		if(nextStep === L)
+			this.visitor.play("walkfront", 8, true);
+			this.visitor.scale.x = 1;
+		}if(nextStep === L){
 			this.visitor.position.x -= 50;
-		if(nextStep === R)
+			this.visitor.play("walkside", 8, true);
+			this.visitor.scale.x = -1;
+		}if(nextStep === R){
 			this.visitor.position.x += 50;
+			this.visitor.play("walkside", 8, true);
+			this.visitor.scale.x = 1;
+		}
 		this.visitorStep++;
 	},
 
@@ -288,8 +303,8 @@ MainGameState.prototype = {
 		//is line of sight clear
 		var ilosc = true;
 
-		var col = (this.visitor.position.x - 150)/50;
-		var row = this.visitor.position.y/50;
+		var col = Math.floor((this.visitor.position.x - 150)/50);
+		var row = Math.floor(this.visitor.position.y/50);
 		if(nextStep === U){
 			console.log("UP");
 			while(row >= 0 && this.board[row][col].sprite !== null){
